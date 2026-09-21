@@ -31,6 +31,28 @@ func (r *ScreeningRepository) Search(
 
 	// TODO(задание 3): добавьте заполненные фильтры, сортировку и Limit.
 
+	if filter.Search != "" {
+		query = query.Where(sq.ILike{
+			"film_title": "%" + filter.Search + "%",
+		})
+	}
+
+	if filter.StartsFrom != nil {
+		query = query.Where(sq.GtOrEq{
+			"starts_at": *filter.StartsFrom,
+		})
+	}
+
+	if filter.MinSeats != nil {
+		query = query.Where(sq.GtOrEq{
+			"available_seats": *filter.MinSeats,
+		})
+	}
+
+	query = query.
+	OrderBy("starts_at ASC", "id ASC").
+	Limit(filter.Limit)
+
 	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("build screenings search query: %w", err)
