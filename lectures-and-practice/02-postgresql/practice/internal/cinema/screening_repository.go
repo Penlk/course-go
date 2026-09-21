@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
@@ -29,29 +30,18 @@ func (r *ScreeningRepository) Search(
 		Select("id", "film_title", "starts_at", "available_seats").
 		From("screenings")
 
-	// TODO(задание 3): добавьте заполненные фильтры, сортировку и Limit.
-
 	if filter.Search != "" {
-		query = query.Where(sq.ILike{
-			"film_title": "%" + filter.Search + "%",
-		})
+		// Escape LIKE metacharacters so Search is a literal substring.
+		search := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(filter.Search)
+		query = query.Where(`film_title ILIKE ? ESCAPE E'\\'`, "%"+search+"%")
 	}
-
 	if filter.StartsFrom != nil {
-		query = query.Where(sq.GtOrEq{
-			"starts_at": *filter.StartsFrom,
-		})
+		query = query.Where(sq.GtOrEq{"starts_at": *filter.StartsFrom})
 	}
-
 	if filter.MinSeats != nil {
-		query = query.Where(sq.GtOrEq{
-			"available_seats": *filter.MinSeats,
-		})
+		query = query.Where(sq.GtOrEq{"available_seats": *filter.MinSeats})
 	}
-
-	query = query.
-	OrderBy("starts_at ASC", "id ASC").
-	Limit(filter.Limit)
+	query = query.OrderBy("starts_at", "id").Limit(filter.Limit)
 
 	querySQL, args, err := query.ToSql()
 	if err != nil {
