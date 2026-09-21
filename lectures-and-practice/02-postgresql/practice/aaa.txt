@@ -1,0 +1,37 @@
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=7029.03..7031.33 rows=20 width=38) (actual time=24.256..26.173 rows=20 loops=1)
+   Buffers: shared hit=1907
+   ->  Gather Merge  (cost=7029.03..18647.59 rows=101031 width=38) (actual time=24.254..26.168 rows=20 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         Buffers: shared hit=1907
+         ->  Sort  (cost=6029.02..6281.59 rows=101031 width=38) (actual time=20.399..20.400 rows=20 loops=2)
+               Sort Key: starts_at
+               Sort Method: top-N heapsort  Memory: 26kB
+               Buffers: shared hit=1907
+               Worker 0:  Sort Method: top-N heapsort  Memory: 26kB
+               ->  Parallel Seq Scan on screenings  (cost=0.00..3340.62 rows=101031 width=38) (actual time=0.014..11.330 rows=85963 loops=2)
+                     Filter: (starts_at >= '2026-09-10 18:00:00+00'::timestamp with time zone)
+                     Rows Removed by Filter: 14039
+                     Buffers: shared hit=1870
+ Planning:
+   Buffers: shared hit=44
+ Planning Time: 0.890 ms
+ Execution Time: 26.218 ms
+(19 rows)
+
+
+                                                                      QUERY PLAN                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.42..1.67 rows=20 width=38) (actual time=0.027..0.033 rows=20 loops=1)
+   Buffers: shared hit=20 read=3
+   ->  Index Scan using screenings_starts_at_idx on screenings  (cost=0.42..10728.58 rows=171753 width=38) (actual time=0.026..0.031 rows=20 loops=1)
+         Index Cond: (starts_at >= '2026-09-10 18:00:00+00'::timestamp with time zone)
+         Buffers: shared hit=20 read=3
+ Planning:
+   Buffers: shared hit=21 read=1
+ Planning Time: 0.234 ms
+ Execution Time: 0.045 ms
+(9 rows)
+
