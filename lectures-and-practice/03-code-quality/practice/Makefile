@@ -1,4 +1,4 @@
-.PHONY: test coverage race leak generate lint
+.PHONY: test coverage race leak generate lint lint-fix
 
 test:
 	go test ./...
@@ -18,3 +18,6 @@ generate:
 
 lint:
 	golangci-lint run ./04-linters
+
+lint-fix:
+	golangci-lint run --fix ./04-linters

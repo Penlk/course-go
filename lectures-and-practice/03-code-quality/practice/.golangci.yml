@@ -15,7 +15,7 @@ linters:
       check-blank: true
 
 issues:
-  max-issues-per-linter: 10
+  max-issues-per-linter: 0
   new: false
 
 formatters:

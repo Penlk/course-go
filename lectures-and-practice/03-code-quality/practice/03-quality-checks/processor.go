@@ -24,7 +24,7 @@ func Total(ctx context.Context, values []int) int {
 		go func() {
 			defer workers.Done()
 			total.Add(int64(value))
-			processed++ // В этой строке спрятана гонка.
+			processed++
 		}()
 	}
 
