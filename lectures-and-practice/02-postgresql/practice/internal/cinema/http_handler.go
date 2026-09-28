@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -50,7 +51,10 @@ func (h *HTTPHandler) searchScreenings(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseScreeningFilter(r *http.Request) (ScreeningFilter, error) {
-	query := r.URL.Query()
+	query, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return ScreeningFilter{}, fmt.Errorf("invalid query parameters: %w", err)
+	}
 	filter := ScreeningFilter{
 		Search: strings.TrimSpace(query.Get("search")),
 		Limit:  20,

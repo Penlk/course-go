@@ -44,8 +44,23 @@ func TestParseScreeningFilterDefaults(t *testing.T) {
 	}
 }
 
+func TestParseScreeningFilterAcceptsEncodedPercent(t *testing.T) {
+	request := httptest.NewRequest("GET", "/screenings?search=%25", nil)
+
+	filter, err := parseScreeningFilter(request)
+	if err != nil {
+		t.Fatalf("parseScreeningFilter() error = %v", err)
+	}
+	if filter.Search != "%" {
+		t.Errorf("Search = %q, want %%", filter.Search)
+	}
+}
+
 func TestParseScreeningFilterRejectsInvalidValues(t *testing.T) {
 	tests := []string{
+		"/screenings?search=%",
+		"/screenings?search=%ZZ",
+		"/screenings?search=%&min_seats=2",
 		"/screenings?starts_from=tomorrow",
 		"/screenings?min_seats=-1",
 		"/screenings?limit=0",
