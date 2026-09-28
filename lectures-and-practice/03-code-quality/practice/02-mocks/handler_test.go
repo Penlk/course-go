@@ -1,10 +1,28 @@
 package handler_test
 
-import "testing"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	handler "code-quality-practice/02-mocks"
+	"code-quality-practice/02-mocks/mocks"
+
+	"go.uber.org/mock/gomock"
+)
 
 func TestHandler(t *testing.T) {
-	// TODO:
-	// 1. Создайте gomock.Controller и сгенерированный mock.
-	// 2. Задайте ожидание вызова Greet.
-	// 3. Вызовите Handler через httptest и проверьте код и тело ответа.
+	service := mocks.NewMockGreeter(gomock.NewController(t))
+	request := httptest.NewRequest(http.MethodGet, "/?name=Alice", nil)
+	service.EXPECT().Greet(request.Context(), "Alice").Return("Hello, Alice!", nil)
+	response := httptest.NewRecorder()
+
+	handler.NewHandler(service).ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("status = %d, want %d", response.Code, http.StatusOK)
+	}
+	if got := response.Body.String(); got != "Hello, Alice!" {
+		t.Errorf("body = %q, want %q", got, "Hello, Alice!")
+	}
 }
