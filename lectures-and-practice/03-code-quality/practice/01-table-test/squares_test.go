@@ -1,6 +1,9 @@
 package tabletest
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestSumSquares(t *testing.T) {
 	tests := []struct {
@@ -9,15 +12,21 @@ func TestSumSquares(t *testing.T) {
 		want    int
 		wantErr error
 	}{
-		// TODO: добавьте случаи для обычного ввода, пустого слайса и ошибки.
+		{name: "regular", numbers: []int{1, 2, 3}, want: 14},
+		{name: "empty", numbers: []int{}, want: 0},
+		{name: "negative", numbers: []int{1, -2, 3}, wantErr: ErrNegativeNumber},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := SumSquares(tt.numbers)
 
-			// TODO: проверьте got и err. Для обёрнутой ошибки используйте errors.Is.
-			_, _ = got, err
+			if got != tt.want {
+				t.Errorf("SumSquares() = %d, want %d", got, tt.want)
+			}
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("SumSquares() error = %v, want %v", err, tt.wantErr)
+			}
 		})
 	}
 }
