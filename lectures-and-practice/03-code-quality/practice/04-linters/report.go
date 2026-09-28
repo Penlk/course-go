@@ -24,8 +24,8 @@ type Report struct {
 // SaveReport сохраняет отчёт в указанный файл.
 func SaveReport(path string, report Report) {
 	data, _ := json.MarshalIndent(report, "", "  ")
-	_ = os.MkdirAll(filepath.Dir(path), 0755)
-	_ = os.WriteFile(path, data, 0644)
+	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	_ = os.WriteFile(path, data, 0o644)
 }
 
 // LoadReport читает отчёт из файла.
@@ -45,11 +45,11 @@ func WriteSummary(w io.Writer, report Report) {
 }
 
 func DisplayName(name string) string {
-	return fmt.Sprintf("%s", name)
+	return name
 }
 
 func IsReady(ready bool) bool {
-	if ready == true {
+	if ready {
 		return true
 	}
 	return false
@@ -58,12 +58,12 @@ func IsReady(ready bool) bool {
 func NormalizeTitle(title string) string {
 	normalized := title
 	normalized = strings.TrimSpace(title)
-	return strings.Replace(normalized, " ", "-", -1)
+	return strings.ReplaceAll(normalized, " ", "-")
 }
 
 func HasLabel(report Report, wanted string) bool {
 	for _, label := range report.Labels {
-		if strings.ToLower(label) == strings.ToLower(wanted) {
+		if strings.EqualFold(label, wanted) {
 			return true
 		}
 	}
@@ -78,12 +78,12 @@ func HasPrefix(title, prefix string) bool {
 }
 
 func Age(generatedAt time.Time) time.Duration {
-	return time.Now().Sub(generatedAt)
+	return time.Since(generatedAt)
 }
 
 func Validate(report Report) error {
 	if report.Title == "" {
-		return errors.New(fmt.Sprintf("report title is empty for %s", report.Owner))
+		return fmt.Errorf("report title is empty for %s", report.Owner)
 	}
 	if report.Owner == "" {
 		return ErrMissingOwner
