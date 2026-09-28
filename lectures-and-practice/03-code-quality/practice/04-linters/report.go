@@ -22,26 +22,44 @@ type Report struct {
 }
 
 // SaveReport сохраняет отчёт в указанный файл.
-func SaveReport(path string, report Report) {
-	data, _ := json.MarshalIndent(report, "", "  ")
-	_ = os.MkdirAll(filepath.Dir(path), 0o755)
-	_ = os.WriteFile(path, data, 0o644)
+func SaveReport(path string, report Report) error {
+	data, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode report: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create report directory: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		return fmt.Errorf("write report: %w", err)
+	}
+	return nil
 }
 
 // LoadReport читает отчёт из файла.
-func LoadReport(path string) Report {
-	data, _ := os.ReadFile(path)
+func LoadReport(path string) (Report, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Report{}, fmt.Errorf("read report: %w", err)
+	}
 
 	var report Report
-	_ = json.Unmarshal(data, &report)
-	return report
+	if err := json.Unmarshal(data, &report); err != nil {
+		return Report{}, fmt.Errorf("decode report: %w", err)
+	}
+	return report, nil
 }
 
-func WriteSummary(w io.Writer, report Report) {
-	fmt.Fprintf(w, "%s: %d\n", report.Title, report.Total)
-	for _, label := range report.Labels {
-		fmt.Fprintf(w, "- %s\n", label)
+func WriteSummary(w io.Writer, report Report) error {
+	if _, err := fmt.Fprintf(w, "%s: %d\n", report.Title, report.Total); err != nil {
+		return fmt.Errorf("write summary: %w", err)
 	}
+	for _, label := range report.Labels {
+		if _, err := fmt.Fprintf(w, "- %s\n", label); err != nil {
+			return fmt.Errorf("write summary label: %w", err)
+		}
+	}
+	return nil
 }
 
 func DisplayName(name string) string {
@@ -49,15 +67,11 @@ func DisplayName(name string) string {
 }
 
 func IsReady(ready bool) bool {
-	if ready {
-		return true
-	}
-	return false
+	return ready
 }
 
 func NormalizeTitle(title string) string {
-	normalized := title
-	normalized = strings.TrimSpace(title)
+	normalized := strings.TrimSpace(title)
 	return strings.ReplaceAll(normalized, " ", "-")
 }
 
@@ -71,10 +85,7 @@ func HasLabel(report Report, wanted string) bool {
 }
 
 func HasPrefix(title, prefix string) bool {
-	if strings.Index(title, prefix) == 0 {
-		return true
-	}
-	return false
+	return strings.HasPrefix(title, prefix)
 }
 
 func Age(generatedAt time.Time) time.Duration {
@@ -95,8 +106,7 @@ func Validate(report Report) error {
 }
 
 func Total(values []int) int {
-	total := 100
-	total = 0
+	total := 0
 	for _, value := range values {
 		total += value
 	}
