@@ -7,7 +7,7 @@ import (
 )
 
 func TestInitialQuote(t *testing.T) {
-	service := NewCheckout(&clients.OfficePrinter{})
+	service := NewCheckout(OfficeAdapter{Client: &clients.OfficePrinter{}})
 	quote, err := service.QuotePrint("A4", 25)
 	if err != nil {
 		t.Fatal(err)
@@ -18,7 +18,7 @@ func TestInitialQuote(t *testing.T) {
 }
 
 func TestUnavailableOption(t *testing.T) {
-	service := NewCheckout(&clients.OfficePrinter{})
+	service := NewCheckout(OfficeAdapter{Client: &clients.OfficePrinter{}})
 	if _, err := service.QuotePrint("A5", 25); err == nil {
 		t.Fatal("unavailable option must return an error")
 	}

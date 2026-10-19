@@ -27,7 +27,9 @@ func main() {
 	})
 	fmt.Println((grasp.Receipt{}).Text(product, 2))
 
-	quote, err := estimation.NewCheckout(&clients.OfficePrinter{}).QuotePrint("A4", 25)
+	quote, err := estimation.NewCheckout(estimation.OfficeAdapter{
+		Client: &clients.OfficePrinter{},
+	}).QuotePrint("A4", 25)
 	if err != nil {
 		log.Fatal(err)
 	}
