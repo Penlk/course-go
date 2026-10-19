@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	receipt, err := solid.NewService(solid.NewMemoryStore()).PlaceOrder(solid.Order{
+	receipt, err := solid.NewService(solid.NewMemoryStore(), &solid.ConsoleNotifier{}).PlaceOrder(solid.Order{
 		ID: "42", Items: []solid.Item{{Name: "Комплект страниц", Price: 300, Quantity: 2}},
 		BindingKind: "spiral", Format: "A3",
 	})

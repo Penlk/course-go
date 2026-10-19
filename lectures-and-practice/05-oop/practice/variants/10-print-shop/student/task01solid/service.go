@@ -79,6 +79,10 @@ func (HardcoverBinding) Cost(format string) (int, error) {
 	return 500, nil
 }
 
+type Notifier interface{
+	Notify(id string) error
+}
+
 type ConsoleNotifier struct{}
 
 func (ConsoleNotifier) Notify(id string) error {
@@ -88,9 +92,10 @@ func (ConsoleNotifier) Notify(id string) error {
 
 type Service struct {
 	store Store
+	notifier Notifier
 }
 
-func NewService(store Store) *Service { return &Service{store: store} }
+func NewService(store Store, notifier Notifier) *Service { return &Service{store: store, notifier: notifier} }
 
 func (s *Service) PlaceOrder(record Order) (string, error) {
 	if record.ID == "" || len(record.Items) == 0 {
@@ -126,8 +131,8 @@ func (s *Service) PlaceOrder(record Order) (string, error) {
 	if err := s.store.Save(record); err != nil {
 		return "", err
 	}
-	notifier := ConsoleNotifier{}
-	if err := notifier.Notify(record.ID); err != nil {
+
+	if err := s.notifier.Notify(record.ID); err != nil {
 		return "", err
 	}
 	return receipt, nil
