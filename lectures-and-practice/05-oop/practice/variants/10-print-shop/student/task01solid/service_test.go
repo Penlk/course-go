@@ -4,7 +4,7 @@ import "testing"
 
 func TestStandardOption(t *testing.T) {
 	store := NewMemoryStore()
-	receipt, err := NewService(store).PlaceOrder(Order{
+	receipt, err := NewService(store, ConsoleNotifier{}).PlaceOrder(Order{
 		ID: "42", Items: []Item{{Name: "Комплект страниц", Price: 300, Quantity: 2}},
 		BindingKind: "spiral", Format: "A3",
 	})
@@ -20,7 +20,7 @@ func TestStandardOption(t *testing.T) {
 }
 
 func TestFreeOption(t *testing.T) {
-	receipt, err := NewService(NewMemoryStore()).PlaceOrder(Order{
+	receipt, err := NewService(NewMemoryStore(), ConsoleNotifier{}).PlaceOrder(Order{
 		ID: "43", Items: []Item{{Name: "Комплект страниц", Price: 300, Quantity: 1}},
 		BindingKind: "none",
 	})
@@ -31,11 +31,36 @@ func TestFreeOption(t *testing.T) {
 
 func TestInvalidQuantityIsRejected(t *testing.T) {
 	store := NewMemoryStore()
-	_, err := NewService(store).PlaceOrder(Order{
+	_, err := NewService(store, ConsoleNotifier{}).PlaceOrder(Order{
 		ID: "44", Items: []Item{{Name: "Комплект страниц", Price: 300, Quantity: 0}},
 		BindingKind: "none",
 	})
 	if err == nil || store.Count() != 0 {
 		t.Fatal("invalid quantity must be rejected before saving")
+	}
+}
+
+type StubNotifier struct {
+	count int
+}
+
+func (s *StubNotifier) Notify(id string) error {
+	s.count++
+	return nil
+}
+
+func TestNewNotifier(t *testing.T) {
+	store := NewMemoryStore()
+	var notifier StubNotifier
+	receipt, err := NewService(store, &notifier).PlaceOrder(Order{
+		ID: "43", Items: []Item{{Name: "Комплект страниц", Price: 300, Quantity: 1}},
+		BindingKind: "none",
+	})
+	if err != nil || receipt != "Заказ 43: 300 руб." {
+		t.Fatalf("receipt=%q, err=%v", receipt, err)
+	}
+
+	if notifier.count != 1 {
+		t.Fatal("the service didn't call notifier")
 	}
 }
