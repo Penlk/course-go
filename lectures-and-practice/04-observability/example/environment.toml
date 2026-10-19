@@ -1,0 +1,6 @@
+schema_version = 1
+lab = 2
+components = ["postgres", "observability"]
+
+[env]
+OTEL_METRIC_EXPORT_INTERVAL = "5000"
