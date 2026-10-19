@@ -20,12 +20,11 @@ func main() {
 	}
 	fmt.Println(receipt)
 
-	product := grasp.PrintSet{
-		Name:    "Учебный комплект",
-		Pages:   grasp.ServicePart{Name: "Страницы", Price: 300},
-		Cover:   grasp.ServicePart{Name: "Обложка", Price: 200},
-		Binding: grasp.ServicePart{Name: "Переплёт", Price: 100},
-	}
+	product := grasp.NewPrintSet("Учебный комплект", []grasp.ServicePart{
+		{Name: "Страницы", Price: 300},
+		{Name: "Обложка", Price: 200},
+		{Name: "Переплёт", Price: 100},
+	})
 	fmt.Println((grasp.Receipt{}).Text(product, 2))
 
 	quote, err := estimation.NewCheckout(&clients.OfficePrinter{}).QuotePrint("A4", 25)
